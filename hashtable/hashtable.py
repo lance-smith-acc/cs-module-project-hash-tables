@@ -21,7 +21,9 @@ class HashTable:
     """
 
     def __init__(self, capacity):
-        # Your code here
+        self.capacity = capacity
+        self.hashList = [None]*self.capacity
+
 
 
     def get_num_slots(self):
@@ -35,6 +37,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return len(self.hashList)
 
 
     def get_load_factor(self):
@@ -63,6 +66,10 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
+        hash = 5381
+        for l in key:
+            hash = (hash*33) + ord(l)
+        return hash
 
 
     def hash_index(self, key):
@@ -82,6 +89,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        self.hashList[self.hash_index(key)] = value
 
 
     def delete(self, key):
@@ -93,6 +101,10 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        try:
+            self.hashList[self.hash_index(key)] = None
+        except:
+            print('Key not found')
 
 
     def get(self, key):
@@ -104,6 +116,10 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        try:
+            return self.hashList[self.hash_index(key)]
+        except:
+            return None
 
 
     def resize(self, new_capacity):
