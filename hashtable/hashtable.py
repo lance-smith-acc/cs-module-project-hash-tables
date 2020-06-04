@@ -25,7 +25,6 @@ class HashTable:
         self.hashList = [None]*self.capacity
 
 
-
     def get_num_slots(self):
         """
         Return the length of the list you're using to hold the hash
@@ -47,6 +46,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        return len([item for item in self.hashList if item is not None]) / self.capacity
 
 
     def fnv1(self, key):
@@ -77,7 +77,7 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
+        # return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
 
     def put(self, key, value):
@@ -89,7 +89,23 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        self.hashList[self.hash_index(key)] = value
+        place = self.hash_index(key)
+
+        if self.hashList[place] is None:
+            self.hashList[place] = HashTableEntry(key, value)
+        else:
+            cur = self.hashList[place]
+            while cur.next is not None and cur.key != key:
+                cur = cur.next
+            if cur.key == key:
+                cur.value = value
+            else:
+                cur.next = HashTableEntry(key, value)
+        
+        if self.get_load_factor() > .7:
+            self.resize(self.capacity*2)
+
+        return self
 
 
     def delete(self, key):
@@ -101,11 +117,21 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        try:
-            self.hashList[self.hash_index(key)] = None
-        except:
+        place = self.hash_index(key)
+        cur = self.hashList[place]
+        if cur is None:
             print('Key not found')
+        elif cur.key == key:
+            self.hashList[place] = cur.next
+        else:
+            while cur.next.key != key and cur.next:
+                cur = cur.next
+            if cur.next.key == key:
+                cur.next = cur.next.next
+            else:
+                print('Key not found')    
 
+        return self
 
     def get(self, key):
         """
@@ -116,8 +142,13 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        place = self.hash_index(key)
         try:
-            return self.hashList[self.hash_index(key)]
+            if self.hashList[place] is not None:
+                cur = self.hashList[place]
+                while cur.key != key:
+                    cur = cur.next
+                return cur.value
         except:
             return None
 
@@ -130,8 +161,17 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        allValues = [value for value in self.hashList if value is not None]
+        self.capacity = new_capacity
+        self.hashList = [None]*new_capacity
+        while allValues:
+            cur = allValues.pop()
+            self.put(cur.key, cur.value)
+            while cur.next is not None:
+                cur = cur.next
+                self.put(cur.key, cur.value)
 
-
+        return self
 
 if __name__ == "__main__":
     ht = HashTable(8)
